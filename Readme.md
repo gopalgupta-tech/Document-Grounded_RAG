@@ -1,22 +1,57 @@
 # Document-Grounded RAG
 
-A lightweight Python prototype for building a document-grounded retrieval-augmented generation (RAG) workflow using LangChain, Hugging Face embeddings, ChromaDB, and Groq models.
+## Project summary
 
-This project demonstrates the core idea of RAG:
+This repository is a lightweight document-grounded RAG prototype built with Python, LangChain, Hugging Face embeddings, ChromaDB, and Groq. It demonstrates the core pipeline for retrieval-augmented generation:
 
 - load documents from a local folder
-- split them into manageable chunks
-- convert text into embeddings
-- store embeddings in a vector database
-- retrieve relevant context for grounded answers
+- split them into chunks
+- generate embeddings
+- store them in a vector database
+- retrieve context for grounded responses
 
-## Features
+This project is designed as a beginner-friendly foundation for building more advanced document Q&A and AI assistants.
 
-- Supports `.txt`, `.pdf`, and `.docx` files
-- Uses `sentence-transformers/all-MiniLM-L6-v2` for embeddings
-- Uses `RecursiveCharacterTextSplitter` to chunk text
-- Stores vectors in Chroma
-- Uses a Groq-backed LLM for experimentation and chat-style prompts
+## Quick start
+
+```bash
+git clone https://github.com/gopalgupta46300-ui/Document-Grounded_RAG.git
+cd Document-Grounded_RAG
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Create a `.env` file in the project root:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+Then build the vector store:
+
+```bash
+python src/vectorstore.py
+```
+
+Optional smoke test:
+
+```bash
+python app.py
+```
+
+## Commands
+
+```bash
+# install dependencies
+pip install -r requirements.txt
+
+# create vector database from documents
+a python src/vectorstore.py
+
+# optional Groq API smoke test
+python app.py
+```
 
 ## Project structure
 
@@ -24,7 +59,6 @@ This project demonstrates the core idea of RAG:
 Document-Grounded_RAG/
 ├── app.py
 ├── requirements.txt
-├── .env.example
 ├── LICENSE
 ├── Readme.md
 ├── checks.json
@@ -38,102 +72,78 @@ Document-Grounded_RAG/
 │   ├── splitter.py
 │   └── vectorstore.py
 ├── vectorstore/
-└── .gitignore
+├── .env
+├── .gitignore
+└── .venv/
 ```
 
-## How it works
+## File responsibilities
 
-1. `src/loader.py` loads files from the documents directory.
-2. `src/splitter.py` splits each document into chunks.
-3. `src/embeddings.py` creates an embedding model using Hugging Face.
-4. `src/vectorstore.py` stores the chunked documents in a Chroma vector store.
-5. `app.py` is a simple Groq example script for testing model access and prompting.
+- `app.py`: sample Groq usage and prompt smoke test
+- `src/loader.py`: loads files from the documents directory
+- `src/splitter.py`: splits documents into chunks with `RecursiveCharacterTextSplitter`
+- `src/embeddings.py`: initializes the Hugging Face embedding model
+- `src/vectorstore.py`: creates and persists the Chroma vector store
+- `data/documents/`: place raw docs here (txt, pdf, docx)
+- `vectorstore/`: persisted Chroma data
 
 ## Execution flow
 
-The flowchart below shows the setup and document-indexing steps. The sample app is a separate Groq smoke test; it does not yet query the Chroma vector store.
-
 ```mermaid
 flowchart TD
-    A([Start]) --> B[Clone repository]
-    B --> C[Create and activate Python virtual environment]
-    C --> D[Install dependencies]
-    D --> E[Set GROQ_API_KEY in .env]
-    E --> F[Add TXT, PDF, or DOCX files to data/documents]
-    F --> G[Update DOCUMENTS_PATH in src/loader.py to the project documents folder]
-    G --> H[Run python src/vectorstore.py]
-    H --> I[Load documents]
-    I --> J[Split documents into chunks]
-    J --> K[Generate embeddings]
-    K --> L[(Persist vectors in Chroma)]
-    E -. Optional: test Groq access .-> M[Run python app.py]
-    M --> N[Print sample model response]
+    A([Start]) --> B[Create virtual environment]
+    B --> C[Install requirements]
+    C --> D[Add GROQ_API_KEY to .env]
+    D --> E[Place files in data/documents]
+    E --> F[Update loader path if needed]
+    F --> G[Run python src/vectorstore.py]
+    G --> H[Load documents]
+    H --> I[Split into chunks]
+    I --> J[Generate embeddings]
+    J --> K[(Store vectors in Chroma)]
+    D -. Optional .-> L[Run python app.py]
+    L --> M[Print Groq model response]
 ```
 
-## Prerequisites
+## How the RAG pipeline works
 
-- Python 3.11+
-- A Groq API key
-- Internet access for installing packages and downloading the embedding model
+1. Documents are loaded from `data/documents/`.
+2. Text is chunked using a recursive splitter.
+3. Each chunk is embedded using `sentence-transformers/all-MiniLM-L6-v2`.
+4. Embeddings are stored in Chroma for similarity search.
+5. A Groq-backed model can be used for generation or prompt testing.
 
-## Setup
+## Setup details
 
-1. Clone the repository
-
-```bash
-git clone https://github.com/gopalgupta46300-ui/Document-Grounded_RAG.git
-cd Document-Grounded_RAG
-```
-
-2. Create a virtual environment and install dependencies
+### 1) Install dependencies
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file in the project root
+### 2) Add environment variables
 
 ```env
-GROQ_API_KEY=your_groq_api_key_here
+GROQ_API_KEY=your_key_here
 ```
 
-4. Add your documents to `data/documents/`
+### 3) Add source documents
 
-Place files such as `.txt`, `.pdf`, or `.docx` inside the folder below:
+Place text, PDF, or DOCX documents in:
 
 ```text
 data/documents/
 ```
 
-## Running the project
+### 4) Fix local loader path if needed
 
-### Build the vector store
-
-```bash
-python src/vectorstore.py
-```
-
-This script loads documents, splits them into chunks, creates embeddings, and saves them to the `vectorstore/` directory using Chroma.
-
-### Run the sample app
-
-```bash
-python app.py
-```
-
-The current `app.py` is a basic Groq smoke test and prints a sample response. It is useful for confirming that your API credentials and model access are working correctly.
-
-## Important note for local use
-
-The repository includes a sample document pipeline, but the loader currently uses a hardcoded Windows-style path in `src/loader.py`:
+The loader currently has a hardcoded Windows-path example:
 
 ```python
 DOCUMENTS_PATH = Path(r"E:\Ultimate_Folder\demo-RAG-system\data\documents")
 ```
 
-For local execution, update this to a project-relative path similar to:
+For portability, prefer:
 
 ```python
 from pathlib import Path
@@ -141,42 +151,78 @@ from pathlib import Path
 DOCUMENTS_PATH = Path(__file__).resolve().parent.parent / "data" / "documents"
 ```
 
-This will ensure the app reads the documents from the repository itself instead of an external folder.
+## Coding conventions
 
-## Requirements summary
+- Prefer small, focused functions and clear file boundaries.
+- Keep data loading, chunking, embedding, and vector storage in separate modules.
+- Use readable variable names and explicit paths.
+- Do not hardcode machine-specific paths into shared code.
+- Keep environment secrets in `.env`, not in source files.
 
-The project depends on:
+## Boundaries and restrictions
 
-- `langchain`
-- `langchain-groq`
-- `langchain-community`
-- `langchain-text-splitters`
-- `langchain-huggingface`
-- `python-dotenv`
-- `chromadb`
-- `pypdf`
-- `sentence-transformers`
+- Never commit secrets or API keys to version control.
+- Do not edit generated vector store artifacts manually.
+- Do not add machine-specific absolute paths unless intentionally required for a local environment.
+- Keep changes focused on the RAG pipeline rather than unrelated project files.
+
+## Verification
+
+Before considering work complete:
+
+- ensure dependencies install cleanly
+- confirm documents are loaded from the expected directory
+- run the vector database generation command successfully
+- verify the Groq API test works if using `app.py`
+
+Example verification commands:
+
+```bash
+python src/vectorstore.py
+python app.py
+```
+
+## Definition of done
+
+A task is complete when:
+
+- the change is scoped and relevant to the RAG workflow
+- the project still installs and runs with the provided setup
+- the pipeline successfully loads documents and creates embeddings
+- no secrets or local-only paths are accidentally committed
+
+## Dependencies
+
+```text
+langchain
+langchain-groq
+langchain-community
+langchain-text-splitters
+python-dotenv
+chromadb
+pypdf
+sentence-transformers
+langchain-huggingface
+```
+
+## Current state
+
+This repository is a clean prototype for learning and experimentation. It is intentionally simple and easy to extend with:
+
+- retriever logic for real query answering
+- prompt templates and chat history
+- metadata-aware document retrieval
+- Streamlit or FastAPI UI
+- stronger observability and evaluation
+
+## Recommended next steps
+
+- add a real question-answering flow using retrieval + LLM
+- build a UI for document chat
+- improve citations and source tracking
+- support more document types and metadata
+- move the project to a production-ready architecture
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
-## Current status
-
-This is a beginner-friendly RAG starter project and a useful foundation for building more advanced document Q&A systems. The repository is intentionally simple and easy to extend with:
-
-- prompt templates
-- retriever logic
-- chat interfaces
-- document metadata filters
-- Azure/OpenAI or other LLM backends
-- UI integration with Streamlit or FastAPI
-
-## Example next steps
-
-- Add a retrieval layer for question answering
-- Build a web UI for document chat
-- Improve source tracking and citation support
-- Add support for richer document metadata
-- Replace the simple smoke-test app with a real RAG chat flow
-
+This project is licensed under the MIT License. See `LICENSE` for details.
