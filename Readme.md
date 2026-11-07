@@ -49,6 +49,27 @@ Document-Grounded_RAG/
 4. `src/vectorstore.py` stores the chunked documents in a Chroma vector store.
 5. `app.py` is a simple Groq example script for testing model access and prompting.
 
+## Execution flow
+
+The flowchart below shows the setup and document-indexing steps. The sample app is a separate Groq smoke test; it does not yet query the Chroma vector store.
+
+```mermaid
+flowchart TD
+    A([Start]) --> B[Clone repository]
+    B --> C[Create and activate Python virtual environment]
+    C --> D[Install dependencies]
+    D --> E[Set GROQ_API_KEY in .env]
+    E --> F[Add TXT, PDF, or DOCX files to data/documents]
+    F --> G[Update DOCUMENTS_PATH in src/loader.py to the project documents folder]
+    G --> H[Run python src/vectorstore.py]
+    H --> I[Load documents]
+    I --> J[Split documents into chunks]
+    J --> K[Generate embeddings]
+    K --> L[(Persist vectors in Chroma)]
+    E -. Optional: test Groq access .-> M[Run python app.py]
+    M --> N[Print sample model response]
+```
+
 ## Prerequisites
 
 - Python 3.11+
