@@ -1,0 +1,13 @@
+python 3.11.4
+langchain
+langchain-groq
+langchain-community
+langchain-text-splitters
+python-dotenv
+chromadb
+pypdf
+sentence-transformers 0.36.2
+langchain-huggingface
+
+# to run this file
+# pip install -r requirements.txt
